@@ -4,11 +4,13 @@
   "description": "excel to mongo",
   "main": "index.js",
   "scripts": {
-    "test": "npm start"
+    "test": "npm start",
+    "start": "node --watch index.js"
   },
   "author": "keeble",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "mongoose": "^8.18.0",

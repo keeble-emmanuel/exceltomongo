@@ -15,10 +15,14 @@ const port = 3000;
 // NOTE: Make sure your MongoDB server is running.
 // For a local setup, this URL is generally sufficient.
 const dbURI = 'mongodb://localhost:27017/excel_import_db';
-mongoose.connect(dbURI)
+mongoose.connect('mongodb+srv://keeble:140076812keeble@cluster0.it6ej.mongodb.net/')
   
 
 // --- Multer Configuration for File Uploads ---
+const uploadDir = './uploads'
+if(!fs.existsSync(uploadDir)){
+  fs.mkdirSync(uploadDir)
+}
 // Multer is a middleware for handling multipart/form-data, used for file uploads.
 const storage = multer.diskStorage({
   // Set the destination directory for the uploaded files.
@@ -50,8 +54,11 @@ const dataSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: false,
     unique: true // Ensure emails are unique
+  },
+  userId:{
+    type: String
   }
 });
 
@@ -61,6 +68,7 @@ const DataModel = mongoose.model('Data', dataSchema);
 // --- Express Route to Handle File Upload and Data Transfer ---
 // This POST route uses Multer to handle the file upload. The 'excelFile' is the field name
 // from the HTML form's input.
+
 app.post('/upload', upload.single('excelFile'), async (req, res) => {
   try {
     // Check if a file was uploaded.
@@ -83,11 +91,17 @@ app.post('/upload', upload.single('excelFile'), async (req, res) => {
     // Convert the worksheet data to a JSON array.
     // Each row in the Excel sheet becomes an object in the array.
     const jsonData = xlsx.utils.sheet_to_json(worksheet);
+    console.log(jsonData)
+   const dataWithUserId = jsonData.map(doc => ({
+  ...doc,
+  userId: '23445'
+}));
+  console.log(dataWithUserId)
 
     // --- Insert Data into MongoDB ---
     // Use insertMany for an efficient bulk insert of all documents.
     // This is much faster than inserting one document at a time.
-    const result = await DataModel.insertMany(jsonData);
+    const result = await DataModel.insertMany(dataWithUserId);
 
     // --- Clean up the temporary file ---
     // Delete the uploaded file from the server's file system.
